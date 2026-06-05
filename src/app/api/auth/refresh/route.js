@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "@/lib/jwt";
@@ -38,3 +39,4 @@ export async function POST(request) {
     return NextResponse.json({ error: "Invalid or expired refresh token" }, { status: 401 });
   }
 }
+

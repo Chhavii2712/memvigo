@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getAuthUser } from "@/lib/auth";
@@ -17,3 +18,4 @@ export async function GET(request) {
     return NextResponse.json({ error: "Failed to fetch telemetry" }, { status: 500 });
   }
 }
+
