@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import prisma from "@/lib/db";
 import { checkInternalSecret } from "@/lib/auth";
+import { zScoreAnalysis } from "@/lib/ml";
 
 const Schema = z.object({
   state:   z.number().int().min(0).max(2),
@@ -29,13 +30,13 @@ export async function POST(request) {
 
     const { state, label, message, details, userId } = parsed.data;
 
-    // Resolve target user — fall back to first registered user for demo
+    // Resolve target user
     let targetUserId = userId;
     if (!targetUserId) {
       const firstUser = await prisma.user.findFirst({ orderBy: { createdAt: "asc" } });
       if (!firstUser) {
         return NextResponse.json(
-          { error: "No users registered yet — register on the website first" },
+          { error: "No users registered yet" },
           { status: 422 }
         );
       }
@@ -43,7 +44,7 @@ export async function POST(request) {
     }
 
     // Save telemetry snapshot
-    await prisma.telemetry.create({
+    const telemetry = await prisma.telemetry.create({
       data: {
         userId:          targetUserId,
         fragRatio:       parseFloat(details.frag_ratio       ?? 0),
@@ -53,9 +54,36 @@ export async function POST(request) {
       },
     });
 
+    // Fetch last 50 readings for ML analysis
+    const recentReadings = await prisma.telemetry.findMany({
+      where:   { userId: targetUserId },
+      orderBy: { createdAt: "desc" },
+      take:    50,
+    });
+
+    // Run ML Z-score analysis
+    const mlResult = zScoreAnalysis(recentReadings, telemetry);
+
+    // Determine final alert state (take worst of rule-based and ML)
+    let finalState = state;
+    let finalMessage = message;
+
+    if (mlResult && mlResult.isCritical && finalState < 2) {
+      finalState = 2;
+      finalMessage = `ML CRITICAL: Anomaly detected in ${mlResult.anomalousMetric} (z-score: ${mlResult.zScore.toFixed(2)})`;
+    } else if (mlResult && mlResult.isAnomaly && finalState < 1) {
+      finalState = 1;
+      finalMessage = `ML WARNING: Unusual ${mlResult.anomalousMetric} detected (z-score: ${mlResult.zScore.toFixed(2)})`;
+    }
+
     // Save alert
     const alert = await prisma.alert.create({
-      data: { userId: targetUserId, state, message, details },
+      data: { 
+        userId: targetUserId, 
+        state: finalState, 
+        message: finalMessage, 
+        details: { ...details, mlResult } 
+      },
     });
 
     return NextResponse.json({ alert }, { status: 201 });
@@ -65,4 +93,3 @@ export async function POST(request) {
     return NextResponse.json({ error: "Failed to save alert" }, { status: 500 });
   }
 }
-
