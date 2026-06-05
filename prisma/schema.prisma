@@ -1,0 +1,55 @@
+// memvigo — Prisma Database Schema
+// Run: npx prisma migrate dev --name init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  passwordHash String
+  createdAt    DateTime    @default(now())
+  alerts       Alert[]
+  telemetry    Telemetry[]
+}
+
+model Alert {
+  id        String   @id @default(cuid())
+  userId    String
+  state     Int      // 0=HEALTHY | 1=WARNING | 2=CRITICAL
+  message   String
+  details   Json     // raw metrics snapshot
+  createdAt DateTime @default(now())
+  dismissed Boolean  @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model Telemetry {
+  id              String   @id @default(cuid())
+  userId          String
+  fragRatio       Float
+  ioWaitMs        Float
+  pageFaultRate   Float
+  activeProcesses Int
+  createdAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+// Stores revoked refresh tokens (for rotation blacklist)
+model RevokedToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  revokedAt DateTime @default(now())
+}
