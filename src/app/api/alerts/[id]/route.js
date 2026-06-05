@@ -1,8 +1,13 @@
-export const dynamic = 'force-dynamic';
-export const dynamicParams = true;
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getAuthUser } from "@/lib/auth";
+
+export const dynamic = 'force-dynamic';
+export const dynamicParams = true;
+
+export async function GET(request, { params }) {
+  return NextResponse.json({ ok: true });
+}
 
 export async function DELETE(request, { params }) {
   const { user, error } = getAuthUser(request);
@@ -19,7 +24,7 @@ export async function DELETE(request, { params }) {
 
     await prisma.alert.update({
       where: { id: params.id },
-      data:  { dismissed: true },
+      data: { dismissed: true },
     });
 
     return NextResponse.json({ message: "Alert dismissed" });
