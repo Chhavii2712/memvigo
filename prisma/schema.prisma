@@ -1,5 +1,5 @@
-// memvigo — Prisma Database Schema
-// Run: npx prisma migrate dev --name init
+// MemVigo — Prisma Database Schema
+// Run: npx prisma migrate dev --name add_api_key
 
 generator client {
   provider = "prisma-client-js"
@@ -14,6 +14,7 @@ model User {
   id           String      @id @default(cuid())
   email        String      @unique
   passwordHash String
+  apiKey       String      @unique @default(cuid())
   createdAt    DateTime    @default(now())
   alerts       Alert[]
   telemetry    Telemetry[]
@@ -24,7 +25,7 @@ model Alert {
   userId    String
   state     Int      // 0=HEALTHY | 1=WARNING | 2=CRITICAL
   message   String
-  details   Json     // raw metrics snapshot
+  details   Json
   createdAt DateTime @default(now())
   dismissed Boolean  @default(false)
 
@@ -47,7 +48,6 @@ model Telemetry {
   @@index([userId, createdAt])
 }
 
-// Stores revoked refresh tokens (for rotation blacklist)
 model RevokedToken {
   id        String   @id @default(cuid())
   token     String   @unique
