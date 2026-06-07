@@ -31,7 +31,7 @@ function DownloadModal({ onClose }) {
   const [downloaded, setDownloaded] = useState(false);
 
   const handleDownload = () => {
-    window.open("https://github.com/Chhavii2712/memvigo/releases/download/v1.0.0/memvigo.exe", "_blank");
+    window.open("https://github.com/Chhavii2712/memvigo/releases/download/v1.0.0/MemVigo-v1.0.0.zip");
     setDownloaded(true);
   };
 
