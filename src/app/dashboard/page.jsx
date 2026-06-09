@@ -148,9 +148,9 @@ export default function DashboardPage() {
             <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition"
-              title="Toggle dark mode"
+              title={theme === "dark" ? "Light Mode" : "Dark Mode"}
             >
-              {theme === "dark" ? "🌞" : "🌙"}
+              {theme === "dark" ? "🌙" : "🌞"}
             </button>
           )}
           <button onClick={logout} className="text-sm text-red-600 dark:text-red-400 hover:underline">Logout</button>
