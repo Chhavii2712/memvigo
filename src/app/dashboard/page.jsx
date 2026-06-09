@@ -4,6 +4,7 @@ import { useAlerts, useTelemetry, useTelemetryHistory } from "../../hooks/useDat
 import { LineChart, Line, XAxis, YAxis, Tooltip, ReferenceLine, ResponsiveContainer } from "recharts";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 
 const STATE_CONFIG = {
   0: { label: "HEALTHY",  color: "bg-green-100 text-green-800",  dot: "bg-green-500" },
@@ -13,15 +14,15 @@ const STATE_CONFIG = {
 
 function MetricCard({ label, value, unit, warn, critical }) {
   const num = parseFloat(value ?? 0);
-  const color = num >= critical ? "border-red-300 bg-red-50"
-              : num >= warn     ? "border-yellow-300 bg-yellow-50"
-              : "border-gray-200 bg-white";
+  const color = num >= critical ? "border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-800"
+              : num >= warn     ? "border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-800"
+              : "border-gray-200 bg-white dark:bg-slate-800 dark:border-slate-700";
   return (
     <div className={`rounded-xl border p-4 ${color}`}>
-      <p className="text-xs text-gray-500 mb-1">{label}</p>
-      <p className="text-2xl font-bold text-gray-800">
+      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{label}</p>
+      <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">
         {typeof num === "number" ? num.toFixed(2) : "—"}
-        <span className="text-sm font-normal text-gray-500 ml-1">{unit}</span>
+        <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-1">{unit}</span>
       </p>
     </div>
   );
@@ -31,7 +32,7 @@ function DownloadModal({ onClose }) {
   const [downloaded, setDownloaded] = useState(false);
 
   const handleDownload = () => {
-    window.open("https://github.com/Chhavii2712/memvigo/releases/download/v2.0.0/MemVigo-v2.0.zip");
+    window.open("https://github.com/Chhavii2712/memvigo/releases/download/v3.0.0/MemVigo-v3.0.zip");
     setDownloaded(true);
   };
 
@@ -88,13 +89,19 @@ function DownloadModal({ onClose }) {
 }
 
 export default function DashboardPage() {
-  const { user, logout, token } = useAuth();
+  const { user, logout, token, loading } = useAuth();
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    if (!token) router.push("/login");
-  }, [token]);
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!loading && !token) router.push("/login");
+  }, [token, loading]);
 
   useEffect(() => {
     const downloaded = localStorage.getItem("agent_downloaded");
@@ -121,33 +128,46 @@ export default function DashboardPage() {
   const latestState = latestAlerts[0]?.state ?? 0;
   const stateConfig = STATE_CONFIG[latestState] ?? STATE_CONFIG[0];
 
+  if (loading || !token) {
+    return <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center text-gray-500 dark:text-gray-400">Loading dashboard...</div>;
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors">
       {showModal && <DownloadModal onClose={handleModalClose} />}
 
       {/* Header */}
-      <header className="bg-white border-b px-6 py-4 flex items-center justify-between">
+      <header className="bg-white dark:bg-slate-800 border-b dark:border-slate-700 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="text-xl font-bold tracking-tight">memvigo</span>
-          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-mono">Dashboard</span>
+          <span className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">memvigo</span>
+          <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 px-2 py-0.5 rounded font-mono">Dashboard</span>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-500">{user?.email}</span>
-          <button onClick={logout} className="text-sm text-red-600 hover:underline">Logout</button>
+          <span className="text-sm text-gray-500 dark:text-gray-400">{user?.email}</span>
+          {mounted && (
+            <button
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition"
+              title="Toggle dark mode"
+            >
+              {theme === "dark" ? "🌞" : "🌙"}
+            </button>
+          )}
+          <button onClick={logout} className="text-sm text-red-600 dark:text-red-400 hover:underline">Logout</button>
         </div>
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-8 space-y-6">
         {/* System Status */}
-        <div className="bg-white rounded-2xl border p-6 flex items-center gap-4">
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-6 flex items-center gap-4">
           <span className={`inline-block w-3 h-3 rounded-full ${stateConfig.dot}`}></span>
           <div>
-            <p className="text-xs text-gray-500">System Status</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">System Status</p>
             <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${stateConfig.color}`}>
               {stateConfig.label}
             </span>
           </div>
-          <div className="ml-auto text-xs text-gray-400">Auto-refresh every 5s</div>
+          <div className="ml-auto text-xs text-gray-400 dark:text-gray-500">Auto-refresh every 5s</div>
         </div>
 
         {/* Metrics Grid */}
@@ -159,8 +179,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Chart */}
-        <div className="bg-white rounded-2xl border p-6">
-          <h2 className="text-sm font-semibold text-gray-700 mb-4">Fragmentation Ratio — Live History</h2>
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-6">
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-4">Fragmentation Ratio — Live History</h2>
           <ResponsiveContainer width="100%" height={200}>
             <LineChart data={history}>
               <XAxis dataKey="time" tick={{ fontSize: 11 }} />
@@ -173,20 +193,20 @@ export default function DashboardPage() {
         </div>
 
         {/* Alert Feed */}
-        <div className="bg-white rounded-2xl border p-6">
-          <h2 className="text-sm font-semibold text-gray-700 mb-4">Recent Alerts</h2>
+        <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-6">
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-4">Recent Alerts</h2>
           {latestAlerts.length === 0 ? (
-            <p className="text-sm text-gray-400">No alerts yet. The Java engine will post alerts here.</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">No alerts yet. The Java engine will post alerts here.</p>
           ) : (
             <ul className="space-y-2">
               {latestAlerts.map((alert) => (
                 <li key={alert.id} className={`flex items-start gap-3 text-sm p-3 rounded-lg
-                  ${alert.state === 2 ? "bg-red-50" : alert.state === 1 ? "bg-yellow-50" : "bg-gray-50"}`}>
+                  ${alert.state === 2 ? "bg-red-50 dark:bg-red-900/20" : alert.state === 1 ? "bg-yellow-50 dark:bg-yellow-900/20" : "bg-gray-50 dark:bg-slate-700/50"}`}>
                   <span className={`mt-0.5 w-2 h-2 rounded-full flex-shrink-0
                     ${alert.state === 2 ? "bg-red-500" : alert.state === 1 ? "bg-yellow-500" : "bg-green-500"}`}></span>
                   <div className="flex-1">
-                    <span className="font-medium">{alert.message}</span>
-                    <span className="ml-2 text-xs text-gray-400">
+                    <span className="font-medium text-gray-800 dark:text-gray-200">{alert.message}</span>
+                    <span className="ml-2 text-xs text-gray-400 dark:text-gray-500">
                       {new Date(alert.createdAt).toLocaleTimeString()}
                     </span>
                   </div>
