@@ -7,16 +7,16 @@ import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 
 const STATE_CONFIG = {
-  0: { label: "HEALTHY",  color: "bg-green-100 text-green-800",  dot: "bg-green-500" },
-  1: { label: "WARNING",  color: "bg-yellow-100 text-yellow-800", dot: "bg-yellow-500 animate-pulse" },
-  2: { label: "CRITICAL", color: "bg-red-100 text-red-800",       dot: "bg-red-500 animate-pulse" },
+  0: { label: "HEALTHY", color: "bg-green-100 text-green-800", dot: "bg-green-500" },
+  1: { label: "WARNING", color: "bg-yellow-100 text-yellow-800", dot: "bg-yellow-500 animate-pulse" },
+  2: { label: "CRITICAL", color: "bg-red-100 text-red-800", dot: "bg-red-500 animate-pulse" },
 };
 
 function MetricCard({ label, value, unit, warn, critical }) {
   const num = parseFloat(value ?? 0);
   const color = num >= critical ? "border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-800"
-              : num >= warn     ? "border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-800"
-              : "border-gray-200 bg-white dark:bg-slate-800 dark:border-slate-700";
+    : num >= warn ? "border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-800"
+      : "border-gray-200 bg-white dark:bg-slate-800 dark:border-slate-700";
   return (
     <div className={`rounded-xl border p-4 ${color}`}>
       <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{label}</p>
@@ -113,16 +113,16 @@ export default function DashboardPage() {
     setShowModal(false);
   };
 
-  const { data: alertData }     = useAlerts(8);
-  const { data: telData }       = useTelemetry();
-  const { data: historyData }   = useTelemetryHistory(40);
+  const { data: alertData } = useAlerts(8);
+  const { data: telData } = useTelemetry();
+  const { data: historyData } = useTelemetryHistory(40);
 
-  const latestAlerts  = alertData?.alerts  ?? [];
-  const current       = telData?.telemetry ?? {};
-  const history       = (historyData?.telemetry ?? []).map((t) => ({
-    time:      new Date(t.createdAt).toLocaleTimeString(),
+  const latestAlerts = alertData?.alerts ?? [];
+  const current = telData?.telemetry ?? {};
+  const history = (historyData?.telemetry ?? []).map((t) => ({
+    time: new Date(t.createdAt).toLocaleTimeString(),
     fragRatio: parseFloat(t.fragRatio?.toFixed(3)),
-    ioWait:    parseFloat(t.ioWaitMs?.toFixed(1)),
+    ioWait: parseFloat(t.ioWaitMs?.toFixed(1)),
   }));
 
   const latestState = latestAlerts[0]?.state ?? 0;
@@ -172,10 +172,10 @@ export default function DashboardPage() {
 
         {/* Metrics Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <MetricCard label="Frag Ratio"       value={current.fragRatio}       unit=""    warn={0.5} critical={0.8} />
-          <MetricCard label="IO Wait"          value={current.ioWaitMs}        unit="ms"  warn={30}  critical={50}  />
-          <MetricCard label="Page Fault Rate"  value={current.pageFaultRate}   unit="/s"  warn={20}  critical={30}  />
-          <MetricCard label="Active Processes" value={current.activeProcesses} unit=""    warn={150} critical={200} />
+          <MetricCard label="Frag Ratio" value={current.fragRatio} unit="" warn={0.5} critical={0.8} />
+          <MetricCard label="IO Wait" value={current.ioWaitMs} unit="ms" warn={30} critical={50} />
+          <MetricCard label="Page Fault Rate" value={current.pageFaultRate} unit="/s" warn={20} critical={30} />
+          <MetricCard label="Active Processes" value={current.activeProcesses} unit="" warn={150} critical={200} />
         </div>
 
         {/* Chart */}
