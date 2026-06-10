@@ -116,9 +116,8 @@ export default function HomePage() {
       <section id="features" className="px-6 py-24">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <span className="text-xs font-mono text-blue-400 tracking-widest uppercase">Full Toolkit</span>
-            <h2 className="text-4xl font-bold mt-3">Everything You Need</h2>
-          </div>
+            <span className="text-xs font-mono text-blue-400 tracking-widest uppercase">What We Offer</span>
+            <h2 className="text-4xl font-bold mt-3">Features</h2>          </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {[
