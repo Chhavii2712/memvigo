@@ -15,28 +15,36 @@ export default function HomePage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const isDark = theme === "dark";
+
   return (
-    <div className="min-h-screen bg-[#0a0f1e] dark:bg-[#0a0f1e] light:bg-white text-white dark:text-white">
+    <div className={`min-h-screen transition-colors duration-300 ${isDark ? "bg-[#0a0f1e] text-white" : "bg-white text-gray-900"}`}>
 
       {/* Nav */}
-      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled ? "bg-[#0a0f1e]/90 backdrop-blur-md border-b border-white/10" : ""} px-6 py-4 flex items-center justify-between`}>
+      <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+        scrolled
+          ? isDark
+            ? "bg-[#0a0f1e]/90 backdrop-blur-md border-b border-white/10"
+            : "bg-white/90 backdrop-blur-md border-b border-gray-200"
+          : ""
+      } px-6 py-4 flex items-center justify-between`}>
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-sm">M</div>
+          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-sm text-white">M</div>
           <span className="text-lg font-bold tracking-tight">memvigo</span>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="#how-it-works" className="text-sm text-gray-400 hover:text-white transition-colors hidden md:block">How It Works</Link>
-          <Link href="#features" className="text-sm text-gray-400 hover:text-white transition-colors hidden md:block">Features</Link>
+          <Link href="#how-it-works" className={`text-sm transition-colors hidden md:block ${isDark ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-900"}`}>How It Works</Link>
+          <Link href="#features" className={`text-sm transition-colors hidden md:block ${isDark ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-900"}`}>Features</Link>
           {mounted && (
             <button
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="p-2 rounded-full hover:bg-white/10 transition"
+              onClick={() => setTheme(isDark ? "light" : "dark")}
+              className={`p-2 rounded-full transition ${isDark ? "hover:bg-white/10" : "hover:bg-gray-100"}`}
               title="Toggle theme"
             >
-              {theme === "dark" ? "🌙" : "🌞"}
+              {isDark ? "🌙" : "🌞"}
             </button>
           )}
-          <Link href="/login" className="text-sm text-gray-300 hover:text-white px-4 py-2 rounded-lg transition-colors">Sign In</Link>
+          <Link href="/login" className={`text-sm px-4 py-2 rounded-lg transition-colors ${isDark ? "text-gray-300 hover:text-white" : "text-gray-600 hover:text-gray-900"}`}>Sign In</Link>
           <Link href="/register" className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors font-medium">
             Get Started
           </Link>
@@ -47,7 +55,7 @@ export default function HomePage() {
       <section className="min-h-screen flex flex-col items-center justify-center text-center px-6 pt-20 relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
           {[...Array(50)].map((_, i) => (
-            <div key={i} className="absolute w-1 h-1 bg-white/10 rounded-full"
+            <div key={i} className={`absolute w-1 h-1 rounded-full ${isDark ? "bg-white/10" : "bg-gray-900/5"}`}
               style={{ left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%` }} />
           ))}
         </div>
@@ -65,7 +73,7 @@ export default function HomePage() {
             <span className="text-blue-500">Before Your System Crashes.</span>
           </h1>
 
-          <p className="text-lg text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+          <p className={`text-lg max-w-2xl mx-auto mb-10 leading-relaxed ${isDark ? "text-gray-400" : "text-gray-600"}`}>
             MemVigo watches your PC's memory health in real-time, learns your system's normal behavior, and alerts you the moment something goes wrong — before it becomes a crash.
           </p>
 
@@ -73,7 +81,7 @@ export default function HomePage() {
             <Link href="/register" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-colors">
               Start Monitoring →
             </Link>
-            <Link href="/login" className="border border-white/20 hover:border-white/40 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-colors">
+            <Link href="/dashboard" className={`border px-8 py-4 rounded-xl font-semibold text-lg transition-colors ${isDark ? "border-white/20 hover:border-white/40 text-white" : "border-gray-300 hover:border-gray-400 text-gray-900"}`}>
               Enter Dashboard
             </Link>
           </div>
@@ -108,16 +116,16 @@ export default function HomePage() {
               desc: "Open your dashboard from any device — phone, tablet, or PC — and see your memory health updating live.",
             },
           ].map((item) => (
-            <div key={item.step} className="bg-white/5 border border-white/10 rounded-2xl p-8 hover:bg-white/[0.08] transition-colors">
+            <div key={item.step} className={`border rounded-2xl p-8 transition-colors ${isDark ? "bg-white/5 border-white/10 hover:bg-white/[0.08]" : "bg-gray-50 border-gray-200 hover:bg-gray-100"}`}>
               <div className="flex items-center justify-between mb-6">
                 <span className="text-4xl">{item.icon}</span>
-                <span className="text-6xl font-bold text-white/5">{item.step}</span>
+                <span className={`text-6xl font-bold ${isDark ? "text-white/5" : "text-gray-200"}`}>{item.step}</span>
               </div>
               <span className="text-xs font-mono text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
                 Step {item.step}
               </span>
               <h3 className="text-xl font-bold mt-4 mb-3">{item.title}</h3>
-              <p className="text-gray-400 leading-relaxed text-sm">{item.desc}</p>
+              <p className={`leading-relaxed text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}>{item.desc}</p>
             </div>
           ))}
         </div>
@@ -133,41 +141,17 @@ export default function HomePage() {
 
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              {
-                icon: "🧠",
-                title: "ML-Based Detection",
-                desc: "Our ML engine learns what's normal for your specific PC and flags unusual behavior — not just fixed thresholds.",
-              },
-              {
-                icon: "⚡",
-                title: "Instant Alerts",
-                desc: "Get real-time alerts the moment memory fragmentation, IO wait, or page fault rates spike beyond normal.",
-              },
-              {
-                icon: "📱",
-                title: "Monitor From Anywhere",
-                desc: "Your dashboard is accessible from any device. Check your PC's memory health from your phone while away.",
-              },
-              {
-                icon: "🔇",
-                title: "Silent Background Agent",
-                desc: "Runs completely silently with no terminal windows. Just a small system tray icon — monitoring round the clock.",
-              },
-              {
-                icon: "🔄",
-                title: "Auto-Start on Boot",
-                desc: "Once installed, the agent starts automatically every time you turn on your PC. Set it and forget it.",
-              },
-              {
-                icon: "📈",
-                title: "Historical Data",
-                desc: "All telemetry is stored so you can track memory health trends over time and spot patterns before they become problems.",
-              },
+              { icon: "🧠", title: "ML-Based Detection", desc: "Our ML engine learns what's normal for your specific PC and flags unusual behavior — not just fixed thresholds." },
+              { icon: "⚡", title: "Instant Alerts", desc: "Get real-time alerts the moment memory fragmentation, IO wait, or page fault rates spike beyond normal." },
+              { icon: "📱", title: "Monitor From Anywhere", desc: "Your dashboard is accessible from any device. Check your PC's memory health from your phone while away." },
+              { icon: "🔇", title: "Silent Background Agent", desc: "Runs completely silently with no terminal windows. Just a small system tray icon — monitoring round the clock." },
+              { icon: "🔄", title: "Auto-Start on Boot", desc: "Once installed, the agent starts automatically every time you turn on your PC. Set it and forget it." },
+              { icon: "📈", title: "Historical Data", desc: "All telemetry is stored so you can track memory health trends over time and spot patterns before they become problems." },
             ].map((f) => (
-              <div key={f.title} className="bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/[0.08] transition-colors">
+              <div key={f.title} className={`border rounded-2xl p-6 transition-colors ${isDark ? "bg-white/5 border-white/10 hover:bg-white/[0.08]" : "bg-gray-50 border-gray-200 hover:bg-gray-100"}`}>
                 <div className="text-3xl mb-4">{f.icon}</div>
                 <h3 className="font-bold text-lg mb-2">{f.title}</h3>
-                <p className="text-sm text-gray-400 leading-relaxed">{f.desc}</p>
+                <p className={`text-sm leading-relaxed ${isDark ? "text-gray-400" : "text-gray-600"}`}>{f.desc}</p>
               </div>
             ))}
           </div>
@@ -179,36 +163,21 @@ export default function HomePage() {
         <div className="text-center mb-12">
           <span className="text-xs font-mono text-blue-400 tracking-widest uppercase">Intelligence</span>
           <h2 className="text-4xl font-bold mt-3">3 Levels of Awareness</h2>
-          <p className="text-gray-400 mt-3">MemVigo always knows how your system is doing</p>
+          <p className={`mt-3 ${isDark ? "text-gray-400" : "text-gray-600"}`}>MemVigo always knows how your system is doing</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
           {[
-            {
-              state: "HEALTHY",
-              dot: "bg-green-500",
-              color: "bg-green-500/20 text-green-400 border-green-500/20",
-              desc: "All memory metrics are within normal range. Your system is running fine.",
-            },
-            {
-              state: "WARNING",
-              dot: "bg-yellow-500",
-              color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/20",
-              desc: "Unusual activity detected. Memory pressure is building up — watch closely.",
-            },
-            {
-              state: "CRITICAL",
-              dot: "bg-red-500",
-              color: "bg-red-500/20 text-red-400 border-red-500/20",
-              desc: "High fragmentation or IO stress detected. Immediate attention required.",
-            },
+            { state: "HEALTHY", dot: "bg-green-500", color: "bg-green-500/20 text-green-400 border-green-500/20", desc: "All memory metrics are within normal range. Your system is running fine." },
+            { state: "WARNING", dot: "bg-yellow-500", color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/20", desc: "Unusual activity detected. Memory pressure is building up — watch closely." },
+            { state: "CRITICAL", dot: "bg-red-500", color: "bg-red-500/20 text-red-400 border-red-500/20", desc: "High fragmentation or IO stress detected. Immediate attention required." },
           ].map((s) => (
-            <div key={s.state} className="bg-white/5 border border-white/10 rounded-2xl p-6">
+            <div key={s.state} className={`border rounded-2xl p-6 ${isDark ? "bg-white/5 border-white/10" : "bg-gray-50 border-gray-200"}`}>
               <div className="flex items-center gap-3 mb-4">
                 <span className={`w-3 h-3 rounded-full ${s.dot}`}></span>
                 <span className={`px-3 py-1 rounded-full text-xs font-bold border ${s.color}`}>{s.state}</span>
               </div>
-              <p className="text-sm text-gray-400 leading-relaxed">{s.desc}</p>
+              <p className={`text-sm leading-relaxed ${isDark ? "text-gray-400" : "text-gray-600"}`}>{s.desc}</p>
             </div>
           ))}
         </div>
@@ -218,7 +187,7 @@ export default function HomePage() {
       <section className="px-6 py-24 text-center">
         <div className="max-w-2xl mx-auto">
           <h2 className="text-4xl font-bold mb-6">Ready to Monitor Your PC?</h2>
-          <p className="text-gray-400 mb-10">Join MemVigo and never be surprised by a memory crash again.</p>
+          <p className={`mb-10 ${isDark ? "text-gray-400" : "text-gray-600"}`}>Join MemVigo and never be surprised by a memory crash again.</p>
           <Link href="/register" className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-xl font-semibold text-lg transition-colors inline-block">
             Get Started Free →
           </Link>
@@ -226,7 +195,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 px-6 py-8 text-center text-xs text-gray-600">
+      <footer className={`border-t px-6 py-8 text-center text-xs ${isDark ? "border-white/10 text-gray-600" : "border-gray-200 text-gray-400"}`}>
         memvigo — Real-Time Memory Health Monitoring
       </footer>
     </div>
