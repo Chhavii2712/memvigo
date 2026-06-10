@@ -44,9 +44,8 @@ export default function HomePage() {
               {isDark ? "🌙" : "🌞"}
             </button>
           )}
-          <Link href="/dashboard" className={`text-sm px-4 py-2 rounded-lg transition-colors ${isDark ? "text-gray-300 hover:text-white" : "text-gray-600 hover:text-gray-900"}`}>Sign In</Link>
-          <Link href="/register" className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors font-medium">
-            Get Started
+          <Link href="/dashboard" className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors font-medium">
+            Enter Dashboard
           </Link>
         </div>
       </nav>
@@ -77,12 +76,9 @@ export default function HomePage() {
             MemVigo watches your PC's memory health in real-time, learns your system's normal behavior, and alerts you the moment something goes wrong — before it becomes a crash.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/register" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-colors">
-              Start Monitoring →
-            </Link>
-            <Link href="/dashboard" className={`border px-8 py-4 rounded-xl font-semibold text-lg transition-colors ${isDark ? "border-white/20 hover:border-white/40 text-white" : "border-gray-300 hover:border-gray-400 text-gray-900"}`}>
-              Enter Dashboard
+          <div className="flex justify-center">
+            <Link href="/dashboard" className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-colors">
+              Enter Dashboard →
             </Link>
           </div>
         </div>
@@ -97,24 +93,9 @@ export default function HomePage() {
 
         <div className="grid md:grid-cols-3 gap-8">
           {[
-            {
-              step: "01",
-              icon: "⬇",
-              title: "Download Agent",
-              desc: "Download the MemVigo agent — a lightweight app that runs silently in the background on your Windows PC. No setup required.",
-            },
-            {
-              step: "02",
-              icon: "▶",
-              title: "Run Once",
-              desc: "Run the agent once and sign in with your MemVigo account. It auto-starts on every boot — completely silent.",
-            },
-            {
-              step: "03",
-              icon: "📊",
-              title: "Monitor Anywhere",
-              desc: "Open your dashboard from any device — phone, tablet, or PC — and see your memory health updating live.",
-            },
+            { step: "01", icon: "⬇", title: "Download Agent", desc: "Download the MemVigo agent — a lightweight app that runs silently in the background on your Windows PC. No setup required." },
+            { step: "02", icon: "▶", title: "Run Once", desc: "Run the agent once and sign in with your MemVigo account. It auto-starts on every boot — completely silent." },
+            { step: "03", icon: "📊", title: "Monitor Anywhere", desc: "Open your dashboard from any device — phone, tablet, or PC — and see your memory health updating live." },
           ].map((item) => (
             <div key={item.step} className={`border rounded-2xl p-8 transition-colors ${isDark ? "bg-white/5 border-white/10 hover:bg-white/[0.08]" : "bg-gray-50 border-gray-200 hover:bg-gray-100"}`}>
               <div className="flex items-center justify-between mb-6">
@@ -180,17 +161,6 @@ export default function HomePage() {
               <p className={`text-sm leading-relaxed ${isDark ? "text-gray-400" : "text-gray-600"}`}>{s.desc}</p>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="px-6 py-24 text-center">
-        <div className="max-w-2xl mx-auto">
-          <h2 className="text-4xl font-bold mb-6">Ready to Monitor Your PC?</h2>
-          <p className={`mb-10 ${isDark ? "text-gray-400" : "text-gray-600"}`}>Join MemVigo and never be surprised by a memory crash again.</p>
-          <Link href="/register" className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-xl font-semibold text-lg transition-colors inline-block">
-            Get Started Free →
-          </Link>
         </div>
       </section>
 
