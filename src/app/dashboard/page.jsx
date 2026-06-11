@@ -1,7 +1,7 @@
 "use client";
 import { useAuth } from "../../lib/AuthContext";
 import { useAlerts, useTelemetry, useTelemetryHistory } from "../../hooks/useData";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ReferenceLine, ResponsiveContainer } from "recharts";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ReferenceLine, ResponsiveContainer, Brush } from "recharts";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
@@ -12,14 +12,37 @@ const STATE_CONFIG = {
   2: { label: "CRITICAL", color: "bg-red-100 text-red-800", dot: "bg-red-500 animate-pulse" },
 };
 
+const METRIC_INFO = {
+  "Frag Ratio": "Memory fragmentation ratio (0-1). Higher means memory is more fragmented. Above 0.8 is critical.",
+  "IO Wait": "Time your CPU waits for disk/memory operations. High values mean your system is struggling.",
+  "Page Fault Rate": "How often your system needs to load memory from disk. High rates slow down your PC.",
+  "Active Processes": "Number of running processes. Too many can overload your system memory.",
+};
+
 function MetricCard({ label, value, unit, warn, critical }) {
+  const [showTooltip, setShowTooltip] = useState(false);
   const num = parseFloat(value ?? 0);
-  const color = num >= critical ? "border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-800"
-    : num >= warn ? "border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-800"
+  const color = num >= critical
+    ? "border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-800"
+    : num >= warn
+      ? "border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-800"
       : "border-gray-200 bg-white dark:bg-slate-800 dark:border-slate-700";
+
   return (
-    <div className={`rounded-xl border p-4 ${color}`}>
-      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{label}</p>
+    <div className={`rounded-xl border p-4 ${color} relative`}>
+      <div className="flex items-center justify-between mb-1">
+        <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+        <button
+          onMouseEnter={() => setShowTooltip(true)}
+          onMouseLeave={() => setShowTooltip(false)}
+          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xs w-4 h-4 rounded-full border border-gray-300 dark:border-gray-600 flex items-center justify-center"
+        >?</button>
+      </div>
+      {showTooltip && (
+        <div className="absolute z-10 top-8 right-0 bg-gray-900 text-white text-xs rounded-lg p-3 w-52 shadow-xl">
+          {METRIC_INFO[label]}
+        </div>
+      )}
       <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">
         {typeof num === "number" ? num.toFixed(2) : "—"}
         <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-1">{unit}</span>
@@ -37,8 +60,8 @@ function DownloadModal({ onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl p-8 max-w-lg w-full mx-4 shadow-2xl overflow-y-auto max-h-[90vh]">
         <div className="text-center mb-6">
           <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -47,23 +70,48 @@ function DownloadModal({ onClose }) {
           </div>
           <h2 className="text-xl font-bold text-gray-800 mb-2">Download MemVigo Agent</h2>
           <p className="text-sm text-gray-500">
-            To start monitoring your PC, you need to download and run the MemVigo Agent on your computer.
+            To start monitoring your PC, download and run the MemVigo Agent.
           </p>
         </div>
 
-        <div className="bg-gray-50 rounded-xl p-4 mb-6 text-sm text-gray-600 space-y-2">
+        {/* How it works */}
+        <div className="bg-gray-50 rounded-xl p-4 mb-4 text-sm text-gray-600 space-y-2">
           <p className="font-semibold text-gray-700">How it works:</p>
-          <p>1. Download and run <span className="font-mono bg-gray-200 px-1 rounded">memvigo.exe</span></p>
-          <p>2. Enter your email and password once</p>
-          <p>3. Agent runs in background and sends data here</p>
-          <p className="text-xs text-gray-400 mt-2">⚠ Requires Java 17 or higher</p>
+          <p>1. Download and extract <span className="font-mono bg-gray-200 px-1 rounded">MemVigo-v3.0.zip</span></p>
+          <p>2. Run <span className="font-mono bg-gray-200 px-1 rounded">MemVigo.exe</span> — enter your email & password once</p>
+          <p>3. Agent runs silently in background — no terminal, no hassle</p>
+          <p>4. Starts automatically every time you turn on your PC</p>
+          <p className="text-xs text-gray-400">✅ No Java installation needed — everything is bundled!</p>
         </div>
+
+        {/* Privacy */}
+        <div className="bg-blue-50 rounded-xl p-4 mb-4 text-sm text-blue-800 space-y-1">
+          <p className="font-semibold">🔒 100% Safe — Your Privacy is Protected</p>
+          <p>MemVigo only reads <strong>4 memory metrics</strong> from your PC — nothing else.</p>
+          <p className="text-xs text-blue-700 mt-1">Memory fragmentation · IO wait · Page fault rate · Active process count</p>
+          <p className="mt-2 text-xs">Uses <strong>ML anomaly detection</strong> to learn your PC's normal behavior.</p>
+          <p className="text-xs text-blue-600 mt-1">❌ No files &nbsp;|&nbsp; ❌ No passwords &nbsp;|&nbsp; ❌ No browsing history &nbsp;|&nbsp; ❌ No personal data</p>
+        </div>
+
+        {/* Antivirus warning */}
+        {/* Antivirus warning */}
+<div className="bg-yellow-50 rounded-xl p-4 mb-6 text-sm text-yellow-800 space-y-2">
+  <p className="font-semibold">⚠ Your antivirus might get confused!</p>
+  <p className="text-xs">Since MemVigo is a new app, your antivirus doesn't recognize it yet and may show a warning. <strong>This is completely normal</strong> — it happens with many new apps.</p>
+  <p className="text-xs font-medium mt-2">If you see a warning, just do this:</p>
+  <div className="bg-yellow-100 rounded-lg p-3 space-y-1 text-xs">
+    <p>🛡 <strong>Windows says "Unknown app"</strong> → Click <strong>"More info"</strong> → then <strong>"Run anyway"</strong></p>
+    <p>🛡 <strong>Avast/AVG blocks it</strong> → Click <strong>"More options"</strong> → then <strong>"Ignore"</strong></p>
+    <p>🛡 <strong>Other antivirus</strong> → Look for "Allow" or "Trust" option</p>
+  </div>
+  <p className="text-xs text-yellow-700 mt-1">✅ MemVigo only reads memory data — it cannot access your files, photos, passwords or anything personal.</p>
+</div>
 
         <button
           onClick={handleDownload}
           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl mb-3 transition"
         >
-          ⬇ Download memvigo.exe
+          ⬇ Download MemVigo Agent
         </button>
 
         {downloaded && (
@@ -76,14 +124,49 @@ function DownloadModal({ onClose }) {
         )}
 
         {!downloaded && (
-          <button
-            onClick={onClose}
-            className="w-full text-gray-400 hover:text-gray-600 text-sm py-2"
-          >
+          <button onClick={onClose} className="w-full text-gray-400 hover:text-gray-600 text-sm py-2">
             Skip for now
           </button>
         )}
       </div>
+    </div>
+  );
+}
+
+function HelpSection() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-6">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between text-sm font-semibold text-gray-700 dark:text-gray-200"
+      >
+        <span>❓ Help — What do these metrics mean?</span>
+        <span>{open ? "▲" : "▼"}</span>
+      </button>
+      {open && (
+        <div className="mt-4 space-y-4 text-sm text-gray-600 dark:text-gray-400">
+          <div>
+            <p className="font-semibold text-gray-800 dark:text-gray-200">📊 Frag Ratio (0–1)</p>
+            <p>How fragmented your memory is. Think of it like a messy desk — the higher the number, the harder it is for your PC to find things. Above 0.8 is critical.</p>
+          </div>
+          <div>
+            <p className="font-semibold text-gray-800 dark:text-gray-200">⏱ IO Wait (ms)</p>
+            <p>Time your CPU spends waiting for memory/disk operations. Like waiting in a queue — the longer the wait, the slower your system feels.</p>
+          </div>
+          <div>
+            <p className="font-semibold text-gray-800 dark:text-gray-200">⚡ Page Fault Rate (/s)</p>
+            <p>How often your system needs to fetch data from disk instead of RAM. High rates mean your RAM is overwhelmed and your PC will feel sluggish.</p>
+          </div>
+          <div>
+            <p className="font-semibold text-gray-800 dark:text-gray-200">🔢 Active Processes</p>
+            <p>Number of programs/tasks running on your PC right now. Too many processes compete for memory and slow everything down.</p>
+          </div>
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-xs text-blue-700 dark:text-blue-300">
+            💡 MemVigo uses ML to learn YOUR PC's normal ranges — alerts are personalized to your system, not generic thresholds.
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -95,9 +178,7 @@ export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     if (!loading && !token) router.push("/login");
@@ -115,7 +196,7 @@ export default function DashboardPage() {
 
   const { data: alertData } = useAlerts(8);
   const { data: telData } = useTelemetry();
-  const { data: historyData } = useTelemetryHistory(40);
+  const { data: historyData } = useTelemetryHistory(100);
 
   const latestAlerts = alertData?.alerts ?? [];
   const current = telData?.telemetry ?? {};
@@ -129,7 +210,7 @@ export default function DashboardPage() {
   const stateConfig = STATE_CONFIG[latestState] ?? STATE_CONFIG[0];
 
   if (loading || !token) {
-    return <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center text-gray-500 dark:text-gray-400">Loading dashboard...</div>;
+    return <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex items-center justify-center text-gray-500">Loading dashboard...</div>;
   }
 
   return (
@@ -148,11 +229,14 @@ export default function DashboardPage() {
             <button
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition"
-              title={theme === "dark" ? "Dark Mode" : "Light Mode"}
             >
               {theme === "dark" ? "🌙" : "🌞"}
             </button>
           )}
+          <button
+            onClick={() => router.push("/settings")}
+            className="text-sm text-gray-600 dark:text-gray-400 hover:underline"
+          >Settings</button>
           <button onClick={logout} className="text-sm text-red-600 dark:text-red-400 hover:underline">Logout</button>
         </div>
       </header>
@@ -178,16 +262,18 @@ export default function DashboardPage() {
           <MetricCard label="Active Processes" value={current.activeProcesses} unit="" warn={150} critical={200} />
         </div>
 
-        {/* Chart */}
+        {/* Chart with brush for scrolling */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-6">
-          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-4">Fragmentation Ratio — Live History</h2>
-          <ResponsiveContainer width="100%" height={200}>
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1">Fragmentation Ratio — Live History</h2>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">Drag the slider below the chart to scroll through past data</p>
+          <ResponsiveContainer width="100%" height={250}>
             <LineChart data={history}>
-              <XAxis dataKey="time" tick={{ fontSize: 11 }} />
+              <XAxis dataKey="time" tick={{ fontSize: 10 }} />
               <YAxis domain={[0, 1]} tick={{ fontSize: 11 }} />
               <Tooltip />
               <ReferenceLine y={0.8} stroke="#ef4444" strokeDasharray="4 4" label={{ value: "CRITICAL 0.8", fill: "#ef4444", fontSize: 11 }} />
               <Line type="monotone" dataKey="fragRatio" stroke="#3b82f6" strokeWidth={2} dot={false} />
+              <Brush dataKey="time" height={20} stroke="#3b82f6" travellerWidth={8} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -196,7 +282,7 @@ export default function DashboardPage() {
         <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-6">
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-4">Recent Alerts</h2>
           {latestAlerts.length === 0 ? (
-            <p className="text-sm text-gray-400 dark:text-gray-500">No alerts yet. The Java engine will post alerts here.</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500">No alerts yet. The agent will post alerts here.</p>
           ) : (
             <ul className="space-y-2">
               {latestAlerts.map((alert) => (
@@ -215,6 +301,9 @@ export default function DashboardPage() {
             </ul>
           )}
         </div>
+
+        {/* Help Section */}
+        <HelpSection />
       </main>
     </div>
   );
