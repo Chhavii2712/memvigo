@@ -1,7 +1,7 @@
 "use client";
 import { useAuth } from "../../lib/AuthContext";
 import { useAlerts, useTelemetry, useTelemetryHistory } from "../../hooks/useData";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ReferenceLine, ResponsiveContainer, Brush } from "recharts";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ReferenceLine } from "recharts";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
@@ -69,9 +69,7 @@ function DownloadModal({ onClose }) {
             </svg>
           </div>
           <h2 className="text-xl font-bold text-gray-800 mb-2">Download MemVigo Agent</h2>
-          <p className="text-sm text-gray-500">
-            To start monitoring your PC, download and run the MemVigo Agent.
-          </p>
+          <p className="text-sm text-gray-500">To start monitoring your PC, download and run the MemVigo Agent.</p>
         </div>
 
         {/* How it works */}
@@ -94,35 +92,27 @@ function DownloadModal({ onClose }) {
         </div>
 
         {/* Antivirus warning */}
-        {/* Antivirus warning */}
-<div className="bg-yellow-50 rounded-xl p-4 mb-6 text-sm text-yellow-800 space-y-2">
-  <p className="font-semibold">⚠ Your antivirus might get confused!</p>
-  <p className="text-xs">Since MemVigo is a new app, your antivirus doesn't recognize it yet and may show a warning. <strong>This is completely normal</strong> — it happens with many new apps.</p>
-  <p className="text-xs font-medium mt-2">If you see a warning, just do this:</p>
-  <div className="bg-yellow-100 rounded-lg p-3 space-y-1 text-xs">
-    <p>🛡 <strong>Windows says "Unknown app"</strong> → Click <strong>"More info"</strong> → then <strong>"Run anyway"</strong></p>
-    <p>🛡 <strong>Avast/AVG blocks it</strong> → Click <strong>"More options"</strong> → then <strong>"Ignore"</strong></p>
-    <p>🛡 <strong>Other antivirus</strong> → Look for "Allow" or "Trust" option</p>
-  </div>
-  <p className="text-xs text-yellow-700 mt-1">✅ MemVigo only reads memory data — it cannot access your files, photos, passwords or anything personal.</p>
-</div>
+        <div className="bg-yellow-50 rounded-xl p-4 mb-6 text-sm text-yellow-800 space-y-2">
+          <p className="font-semibold">⚠ Your antivirus might get confused!</p>
+          <p className="text-xs">Since MemVigo is a new app, your antivirus doesn't recognize it yet and may show a warning. <strong>This is completely normal</strong> — it happens with many new apps.</p>
+          <p className="mt-1 font-medium text-xs">If you see a warning, just do this:</p>
+          <div className="bg-yellow-100 rounded-lg p-3 space-y-1 text-xs">
+            <p>🛡 <strong>Windows says "Unknown app"</strong> → Click <strong>"More info"</strong> → then <strong>"Run anyway"</strong></p>
+            <p>🛡 <strong>Avast/AVG blocks it</strong> → Click <strong>"More options"</strong> → then <strong>"Ignore"</strong></p>
+            <p>🛡 <strong>Other antivirus</strong> → Look for "Allow" or "Trust" option</p>
+          </div>
+          <p className="text-xs text-yellow-700 mt-1">✅ MemVigo only reads memory data — it cannot access your files, photos, passwords or anything personal.</p>
+        </div>
 
-        <button
-          onClick={handleDownload}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl mb-3 transition"
-        >
+        <button onClick={handleDownload} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl mb-3 transition">
           ⬇ Download MemVigo Agent
         </button>
 
         {downloaded && (
-          <button
-            onClick={onClose}
-            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition"
-          >
+          <button onClick={onClose} className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition">
             ✓ Done! Go to Dashboard
           </button>
         )}
-
         {!downloaded && (
           <button onClick={onClose} className="w-full text-gray-400 hover:text-gray-600 text-sm py-2">
             Skip for now
@@ -233,10 +223,7 @@ export default function DashboardPage() {
               {theme === "dark" ? "🌙" : "🌞"}
             </button>
           )}
-          <button
-            onClick={() => router.push("/settings")}
-            className="text-sm text-gray-600 dark:text-gray-400 hover:underline"
-          >Settings</button>
+          <button onClick={() => router.push("/settings")} className="text-sm text-gray-600 dark:text-gray-400 hover:underline">Settings</button>
           <button onClick={logout} className="text-sm text-red-600 dark:text-red-400 hover:underline">Logout</button>
         </div>
       </header>
@@ -262,20 +249,21 @@ export default function DashboardPage() {
           <MetricCard label="Active Processes" value={current.activeProcesses} unit="" warn={150} critical={200} />
         </div>
 
-        {/* Chart with brush for scrolling */}
+        {/* Chart with horizontal scroll */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-6">
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1">Fragmentation Ratio — Live History</h2>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">Drag the slider below the chart to scroll through past data</p>
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={history}>
-              <XAxis dataKey="time" tick={{ fontSize: 10 }} />
-              <YAxis domain={[0, 1]} tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <ReferenceLine y={0.8} stroke="#ef4444" strokeDasharray="4 4" label={{ value: "CRITICAL 0.8", fill: "#ef4444", fontSize: 11 }} />
-              <Line type="monotone" dataKey="fragRatio" stroke="#3b82f6" strokeWidth={2} dot={false} />
-              <Brush dataKey="time" height={20} stroke="#3b82f6" travellerWidth={8} />
-            </LineChart>
-          </ResponsiveContainer>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">← Scroll left/right inside the chart to see past data →</p>
+          <div className="overflow-x-auto">
+            <div style={{ width: `${Math.max(800, history.length * 15)}px` }}>
+              <LineChart width={Math.max(800, history.length * 15)} height={250} data={history}>
+                <XAxis dataKey="time" tick={{ fontSize: 10 }} />
+                <YAxis domain={[0, 1]} tick={{ fontSize: 11 }} />
+                <Tooltip />
+                <ReferenceLine y={0.8} stroke="#ef4444" strokeDasharray="4 4" label={{ value: "CRITICAL 0.8", fill: "#ef4444", fontSize: 11 }} />
+                <Line type="monotone" dataKey="fragRatio" stroke="#3b82f6" strokeWidth={2} dot={false} />
+              </LineChart>
+            </div>
+          </div>
         </div>
 
         {/* Alert Feed */}
