@@ -132,7 +132,7 @@ export default function SettingsPage() {
                 <p className="text-sm font-medium">Download Agent</p>
                 <p className={`text-xs mt-0.5 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Get the latest version of MemVigo Agent for Windows</p>
               </div>
-              
+              <a
                 href="https://github.com/Chhavii2712/memvigo/releases/download/v3.0.0/MemVigo-v3.0.zip"
                 target="_blank"
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg font-medium transition flex-shrink-0"
