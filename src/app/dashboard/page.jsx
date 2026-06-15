@@ -267,7 +267,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <MetricCard label="Frag Ratio" value={current.fragRatio} unit="" zScore={calculateZScore(history, "fragRatio", current.fragRatio)} />
 
-          <MetricCard label="IO Wait" value={current.ioWaitMs} unit="ms" warn={30} critical={50} />
+          <MetricCard label="IO Wait" value={current.ioWaitMs} unit="ms" zScore={calculateZScore(history, "ioWait", current.ioWaitMs)} />
           <MetricCard label="Page Fault Rate" value={current.pageFaultRate} unit="/s" zScore={calculateZScore(history, "pageFaultRate", current.pageFaultRate)} />
           <MetricCard label="Active Processes" value={current.activeProcesses} unit="" zScore={calculateZScore(history, "activeProcesses", current.activeProcesses)} />
         </div>
