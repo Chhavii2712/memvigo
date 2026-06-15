@@ -13,20 +13,39 @@ const STATE_CONFIG = {
 };
 
 const METRIC_INFO = {
-  "Frag Ratio": "Memory fragmentation ratio (0-1). Higher means memory is more fragmented. Above 0.8 is critical.",
-  "IO Wait": "Time your CPU waits for disk/memory operations. High values mean your system is struggling.",
-  "Page Fault Rate": "How often your system needs to load memory from disk. High rates slow down your PC.",
-  "Active Processes": "Number of running processes. Too many can overload your system memory.",
+  "Frag Ratio": "Memory fragmentation ratio (0-1). The color shows if this is unusual compared to YOUR PC's normal history.",
+  "IO Wait": "Time your CPU waits for disk/memory operations. Color is based on whether this is unusual for your specific PC.",
+  "Page Fault Rate": "How often your system fetches data from disk instead of RAM. Color reflects how unusual this is for you.",
+  "Active Processes": "Number of running programs. Color shows if this count is unusual compared to your PC's normal range.",
 };
 
-function MetricCard({ label, value, unit, warn, critical }) {
+function calculateZScore(history, key, current) {
+  if (!history || history.length < 10) return 0;
+  const values = history.map((h) => h[key]).filter((v) => typeof v === "number" && !isNaN(v));
+  if (values.length < 10) return 0;
+  const mean = values.reduce((a, b) => a + b, 0) / values.length;
+  const variance = values.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / values.length;
+  const std = Math.sqrt(variance);
+  if (std === 0) return 0;
+  return Math.abs((current - mean) / std);
+}
+
+function MetricCard({ label, value, unit, zScore }) {
   const [showTooltip, setShowTooltip] = useState(false);
   const num = parseFloat(value ?? 0);
-  const color = num >= critical
+  const color = zScore >= 3
     ? "border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-800"
-    : num >= warn
+    : zScore >= 2
       ? "border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-800"
       : "border-gray-200 bg-white dark:bg-slate-800 dark:border-slate-700";
+
+  const statusLabel = zScore >= 3
+    ? "⚠ Unusual for your PC"
+    : zScore >= 2
+      ? "Slightly unusual"
+      : "Normal for your PC";
+
+  const statusColor = zScore >= 3 ? "text-red-500" : zScore >= 2 ? "text-yellow-600" : "text-gray-400 dark:text-gray-500";
 
   return (
     <div className={`rounded-xl border p-4 ${color} relative`}>
@@ -47,6 +66,7 @@ function MetricCard({ label, value, unit, warn, critical }) {
         {typeof num === "number" ? num.toFixed(2) : "—"}
         <span className="text-sm font-normal text-gray-500 dark:text-gray-400 ml-1">{unit}</span>
       </p>
+      <p className={`text-xs mt-1 ${statusColor}`}>{statusLabel}</p>
     </div>
   );
 }
@@ -191,10 +211,12 @@ export default function DashboardPage() {
   const latestAlerts = alertData?.alerts ?? [];
   const current = telData?.telemetry ?? {};
   const history = (historyData?.telemetry ?? []).map((t) => ({
-    time: new Date(t.createdAt).toLocaleTimeString(),
-    fragRatio: parseFloat(t.fragRatio?.toFixed(3)),
-    ioWait: parseFloat(t.ioWaitMs?.toFixed(1)),
-  }));
+      time: new Date(t.createdAt).toLocaleTimeString(),
+      fragRatio: parseFloat(t.fragRatio?.toFixed(3)),
+      ioWait: parseFloat(t.ioWaitMs?.toFixed(1)),
+      pageFaultRate: parseFloat(t.pageFaultRate?.toFixed(2)),
+      activeProcesses: t.activeProcesses,
+    }));
 
   const latestState = latestAlerts[0]?.state ?? 0;
   const stateConfig = STATE_CONFIG[latestState] ?? STATE_CONFIG[0];
@@ -243,10 +265,11 @@ export default function DashboardPage() {
 
         {/* Metrics Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <MetricCard label="Frag Ratio" value={current.fragRatio} unit="" warn={0.5} critical={0.8} />
+          <MetricCard label="Frag Ratio" value={current.fragRatio} unit="" zScore={calculateZScore(history, "fragRatio", current.fragRatio)} />
+
           <MetricCard label="IO Wait" value={current.ioWaitMs} unit="ms" warn={30} critical={50} />
-          <MetricCard label="Page Fault Rate" value={current.pageFaultRate} unit="/s" warn={20} critical={30} />
-          <MetricCard label="Active Processes" value={current.activeProcesses} unit="" warn={150} critical={200} />
+          <MetricCard label="Page Fault Rate" value={current.pageFaultRate} unit="/s" zScore={calculateZScore(history, "pageFaultRate", current.pageFaultRate)} />
+          <MetricCard label="Active Processes" value={current.activeProcesses} unit="" zScore={calculateZScore(history, "activeProcesses", current.activeProcesses)} />
         </div>
 
         {/* Chart with horizontal scroll */}
