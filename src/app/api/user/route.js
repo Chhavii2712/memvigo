@@ -20,3 +20,18 @@ export async function GET(request) {
     return NextResponse.json({ error: "Failed to fetch user" }, { status: 500 });
   }
 }
+export async function DELETE(request) {
+  const { user, error } = getAuthUser(request);
+  if (error) return error;
+
+  try {
+    await prisma.user.delete({
+      where: { id: user.id },
+    });
+
+    return NextResponse.json({ message: "Account deleted successfully" });
+  } catch (err) {
+    console.error("[user/delete]", err);
+    return NextResponse.json({ error: "Failed to delete account" }, { status: 500 });
+  }
+}

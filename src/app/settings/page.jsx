@@ -27,7 +27,7 @@ export default function SettingsPage() {
     if (!deleteConfirm) { setDeleteConfirm(true); return; }
     setDeleteLoading(true);
     try {
-      await fetch("/api/user/delete", {
+      await fetch("/api/user", {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -59,7 +59,7 @@ export default function SettingsPage() {
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDark ? "bg-slate-900 text-white" : "bg-gray-50 text-gray-900"}`}>
-      
+
       {/* Header */}
       <header className={`border-b px-6 py-4 flex items-center justify-between ${isDark ? "bg-slate-800 border-slate-700" : "bg-white border-gray-200"}`}>
         <div className="flex items-center gap-3">
@@ -133,14 +133,16 @@ export default function SettingsPage() {
                 <p className={`text-xs mt-0.5 ${isDark ? "text-gray-400" : "text-gray-500"}`}>Get the latest version of MemVigo Agent for Windows</p>
               </div>
               
-                <a href="https://github.com/Chhavii2712/memvigo/releases/download/v3.0.0/MemVigo-v3.0.zip"
+                href="https://github.com/Chhavii2712/memvigo/releases/download/v3.0.0/MemVigo-v3.0.zip"
                 target="_blank"
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg font-medium transition flex-shrink-0"
               >
                 ⬇ Download
               </a>
             </div>
+
             <div className={`border-t ${isDark ? "border-slate-700" : "border-gray-100"}`} />
+
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium">Reset Download Prompt</p>
@@ -152,6 +154,23 @@ export default function SettingsPage() {
               >
                 {agentReset ? "✓ Reset!" : "Reset"}
               </button>
+            </div>
+
+            <div className={`border-t ${isDark ? "border-slate-700" : "border-gray-100"}`} />
+
+            <div>
+              <p className="text-sm font-medium mb-2">⏹ Stop / ▶ Restart Agent</p>
+              <p className={`text-xs mb-3 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                The agent runs in your system tray. To control it manually:
+              </p>
+              <div className={`rounded-lg p-3 space-y-2 text-xs ${isDark ? "bg-slate-700/50" : "bg-gray-50"}`}>
+                <p>
+                  <strong>⏹ To Stop:</strong> Click the <span className="font-mono">^</span> arrow in your taskbar (bottom-right) → right-click the MemVigo icon → <strong>Exit</strong>
+                </p>
+                <p>
+                  <strong>▶ To Restart:</strong> Double-click the <strong>MemVigo</strong> shortcut on your Desktop
+                </p>
+              </div>
             </div>
           </div>
         </div>
