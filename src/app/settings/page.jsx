@@ -165,6 +165,9 @@ export default function SettingsPage() {
               </p>
               <div className={`rounded-lg p-3 space-y-2 text-xs ${isDark ? "bg-slate-700/50" : "bg-gray-50"}`}>
                 <p>
+                  <strong>⚙️ Setup Shortcut:</strong> Double-click <span className="font-mono">create-desktop-shortcut.bat</span> in your extracted folder
+                </p>
+                <p>
                   <strong>⏹ To Stop:</strong> Click the <span className="font-mono">^</span> arrow in your taskbar (bottom-right) → right-click the MemVigo icon → <strong>Exit</strong>
                 </p>
                 <p>
