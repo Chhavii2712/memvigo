@@ -218,6 +218,13 @@ export default function DashboardPage() {
       activeProcesses: t.activeProcesses,
     }));
 
+  const fragRatioValues = history.map(h => h.fragRatio).filter(v => typeof v === "number" && !isNaN(v));
+  const fragMean = fragRatioValues.length > 0 ? fragRatioValues.reduce((a, b) => a + b, 0) / fragRatioValues.length : 0;
+  const fragStd = fragRatioValues.length > 0
+    ? Math.sqrt(fragRatioValues.reduce((a, b) => a + Math.pow(b - fragMean, 2), 0) / fragRatioValues.length)
+    : 0;
+  const mlThreshold = Math.min(1, fragMean + 2 * fragStd);
+
   const latestState = latestAlerts[0]?.state ?? 0;
   const stateConfig = STATE_CONFIG[latestState] ?? STATE_CONFIG[0];
 
@@ -272,19 +279,26 @@ export default function DashboardPage() {
           <MetricCard label="Active Processes" value={current.activeProcesses} unit="" zScore={calculateZScore(history, "activeProcesses", current.activeProcesses)} />
         </div>
 
-        {/* Chart with horizontal scroll */}
+        {/* Chart with sticky y-axis and ML threshold */}
         <div className="bg-white dark:bg-slate-800 rounded-2xl border dark:border-slate-700 p-6">
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1">Fragmentation Ratio — Live History</h2>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">← Scroll left/right inside the chart to see past data →</p>
-          <div className="overflow-x-auto">
-            <div style={{ width: `${Math.max(800, history.length * 15)}px` }}>
-              <LineChart width={Math.max(800, history.length * 15)} height={250} data={history}>
-                <XAxis dataKey="time" tick={{ fontSize: 10 }} />
+          <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">← Scroll left/right inside the chart to see past data → Orange line = your PC's personalized ML threshold</p>
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <LineChart width={50} height={250} data={history}>
                 <YAxis domain={[0, 1]} tick={{ fontSize: 11 }} />
-                <Tooltip />
-                <ReferenceLine y={0.8} stroke="#ef4444" strokeDasharray="4 4" label={{ value: "CRITICAL 0.8", fill: "#ef4444", fontSize: 11 }} />
-                <Line type="monotone" dataKey="fragRatio" stroke="#3b82f6" strokeWidth={2} dot={false} />
               </LineChart>
+            </div>
+            <div className="overflow-x-auto flex-1">
+              <div style={{ width: `${Math.max(800, history.length * 15)}px` }}>
+                <LineChart width={Math.max(800, history.length * 15)} height={250} data={history} margin={{ left: -50 }}>
+                  <XAxis dataKey="time" tick={{ fontSize: 10 }} />
+                  <YAxis domain={[0, 1]} tick={{ fontSize: 11 }} hide />
+                  <Tooltip />
+                  <ReferenceLine y={mlThreshold} stroke="#f59e0b" strokeDasharray="4 4" label={{ value: `ML Threshold ${mlThreshold.toFixed(2)}`, fill: "#f59e0b", fontSize: 11 }} />
+                  <Line type="monotone" dataKey="fragRatio" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                </LineChart>
+              </div>
             </div>
           </div>
         </div>
